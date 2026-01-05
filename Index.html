@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+
+<!-- ESSENCIAL PARA iOS -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+
+<title>Catálogo</title>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+}
+
+/* HEADER */
+h1 {
+    padding: 20px;
+    margin: 0;
+}
+
+/* SEÇÃO */
+.secao {
+    background: #fff;
+    margin-bottom: 10px;
+}
+
+.secao-titulo {
+    padding: 15px 20px;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: #888;
+    border-bottom: 1px solid #eee;
+}
+
+/* ITEM */
+.item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.item img {
+    width: 100px;
+    margin-right: 15px;
+    border-radius: 8px;
+}
+
+.info {
+    flex: 1;
+}
+
+.nome {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.tag {
+    display: inline-block;
+    margin-top: 6px;
+    background: #eee;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 3px;
+}
+
+/* BOTÃO + */
+#btnAdd {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-size: 28px;
+    background: #0f172a;
+    color: white;
+    border: none;
+}
+
+/* OVERLAY (TELA CHEIA) */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: white;
+    display: none;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.overlay input,
+.overlay select {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.overlay button {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    border: none;
+}
+
+.btn-salvar { background: #0f172a; color: white; }
+.btn-cancelar { background: #ccc; }
+.btn-excluir { background: #e11d48; color: white; }
+
+.preview {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Catálogo</h1>
+
+<div id="catalogo"></div>
+
+<button id="btnAdd" onclick="novoTenis()">＋</button>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+    <h2 id="tituloForm">Novo Tênis</h2>
+
+    <input type="hidden" id="editId">
+
+    <input id="modeloInput" placeholder="Modelo (ex: Air Jordan 1)">
+    <input id="nomeInput" placeholder="Nome">
+
+    <!-- STATUS PRIMEIRO -->
+    <select id="usadoInput">
+        <option value="false">NEW</option>
+        <option value="true">WORN</option>
+    </select>
+
+    <!-- ESCOLHER IMAGEM DEPOIS -->
+    <input type="file" accept="image/*" id="fotoInput">
+
+    <!-- PREVIEW -->
+    <img id="preview" class="preview" style="display:none">
+
+    <button class="btn-salvar" onclick="salvarTenis()">Salvar</button>
+    <button class="btn-cancelar" onclick="fechar()">Cancelar</button>
+    <button class="btn-excluir" id="btnExcluir" onclick="excluirTenis()">Excluir</button>
+</div>
+
+<script>
+let tenis = JSON.parse(localStorage.getItem("tenis")) || [];
+let imagemBase64 = "";
+
+function salvarLocal() {
+    localStorage.setItem("tenis", JSON.stringify(tenis));
+}
+
+/* ===== PREVIEW IMAGEM ===== */
+fotoInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        imagemBase64 = reader.result;
+        preview.src = imagemBase64;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+});
+
+function render() {
+    catalogo.innerHTML = "";
+
+    const grupos = {};
+    tenis.forEach(t => {
+        if (!grupos[t.modelo]) grupos[t.modelo] = [];
+        grupos[t.modelo].push(t);
+    });
+
+    for (let modelo in grupos) {
+        const secao = document.createElement("div");
+        secao.className = "secao";
+        secao.innerHTML = `<div class="secao-titulo">${modelo.toUpperCase()}</div>`;
+
+        grupos[modelo].forEach(t => {
+            const item = document.createElement("div");
+            item.className = "item";
+            item.onclick = () => editarTenis(t.id);
+
+            item.innerHTML = `
+                <img src="${t.foto}">
+                <div class="info">
+                    <div class="nome">${t.nome}</div>
+                    <span class="tag">${t.usado ? "WORN" : "NEW"}</span>
+                </div>
+            `;
+            secao.appendChild(item);
+        });
+
+        catalogo.appendChild(secao);
+    }
+}
+
+function novoTenis() {
+    tituloForm.innerText = "Novo Tênis";
+    editId.value = "";
+    modeloInput.value = nomeInput.value = "";
+    usadoInput.value = "false";
+    imagemBase64 = "";
+    preview.style.display = "none";
+    btnExcluir.style.display = "none";
+    overlay.style.display = "block";
+}
+
+function editarTenis(id) {
+    const t = tenis.find(x => x.id === id);
+    tituloForm.innerText = "Editar Tênis";
+    editId.value = t.id;
+    modeloInput.value = t.modelo;
+    nomeInput.value = t.nome;
+    usadoInput.value = t.usado;
+    imagemBase64 = t.foto;
+    preview.src = imagemBase64;
+    preview.style.display = "block";
+    btnExcluir.style.display = "block";
+    overlay.style.display = "block";
+}
+
+function salvarTenis() {
+    if (!imagemBase64) {
+        alert("Selecione uma imagem");
+        return;
+    }
+
+    if (editId.value) {
+        const t = tenis.find(x => x.id == editId.value);
+        Object.assign(t, {
+            modelo: modeloInput.value,
+            nome: nomeInput.value,
+            foto: imagemBase64,
+            usado: usadoInput.value === "true"
+        });
+    } else {
+        tenis.push({
+            id: Date.now(),
+            modelo: modeloInput.value,
+            nome: nomeInput.value,
+            foto: imagemBase64,
+            usado: usadoInput.value === "true"
+        });
+    }
+
+    salvarLocal();
+    fechar();
+    render();
+}
+
+function excluirTenis() {
+    if (!confirm("Excluir este item?")) return;
+    tenis = tenis.filter(t => t.id != editId.value);
+    salvarLocal();
+    fechar();
+    render();
+}
+
+function fechar() {
+    overlay.style.display = "none";
+}
+
+render();
+
+/* ===== SERVICE WORKER ===== */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+</html>
