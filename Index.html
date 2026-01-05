@@ -19,9 +19,31 @@ body {
 }
 
 /* HEADER */
-h1 {
+.header {
     padding: 20px;
-    margin: 0;
+}
+
+h1 {
+    margin: 0 0 10px 0;
+}
+
+/* BUSCA + CONTADOR */
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-container input {
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.counter {
+    font-size: 14px;
+    color: #666;
 }
 
 /* SEÇÃO */
@@ -84,7 +106,7 @@ h1 {
     border: none;
 }
 
-/* OVERLAY (TELA CHEIA) */
+/* OVERLAY */
 .overlay {
     position: fixed;
     inset: 0;
@@ -126,7 +148,19 @@ h1 {
 
 <body>
 
-<h1>Catálogo</h1>
+<div class="header">
+    <h1>Catálogo</h1>
+
+    <div class="search-container">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Buscar..."
+            oninput="render()"
+        >
+        <div class="counter" id="counter"></div>
+    </div>
+</div>
 
 <div id="catalogo"></div>
 
@@ -141,16 +175,13 @@ h1 {
     <input id="modeloInput" placeholder="Modelo (ex: Air Jordan 1)">
     <input id="nomeInput" placeholder="Nome">
 
-    <!-- STATUS PRIMEIRO -->
     <select id="usadoInput">
         <option value="false">NEW</option>
         <option value="true">WORN</option>
     </select>
 
-    <!-- ESCOLHER IMAGEM DEPOIS -->
     <input type="file" accept="image/*" id="fotoInput">
 
-    <!-- PREVIEW -->
     <img id="preview" class="preview" style="display:none">
 
     <button class="btn-salvar" onclick="salvarTenis()">Salvar</button>
@@ -162,11 +193,7 @@ h1 {
 let tenis = JSON.parse(localStorage.getItem("tenis")) || [];
 let imagemBase64 = "";
 
-function salvarLocal() {
-    localStorage.setItem("tenis", JSON.stringify(tenis));
-}
-
-/* ===== PREVIEW IMAGEM ===== */
+/* PREVIEW IMAGEM */
 fotoInput.addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -180,14 +207,32 @@ fotoInput.addEventListener("change", e => {
     reader.readAsDataURL(file);
 });
 
+function salvarLocal() {
+    localStorage.setItem("tenis", JSON.stringify(tenis));
+}
+
 function render() {
+    const busca = document.getElementById("searchInput").value.toLowerCase();
+    const catalogo = document.getElementById("catalogo");
+    const counter = document.getElementById("counter");
+
     catalogo.innerHTML = "";
 
     const grupos = {};
+    let totalVisivel = 0;
+
     tenis.forEach(t => {
+        const texto = `${t.modelo} ${t.nome}`.toLowerCase();
+        if (!texto.includes(busca)) return;
+
         if (!grupos[t.modelo]) grupos[t.modelo] = [];
         grupos[t.modelo].push(t);
+        totalVisivel++;
     });
+
+    counter.innerText = totalVisivel === 1
+    ? "1 item catalogado"
+    : `${totalVisivel} itens catalogados`;
 
     for (let modelo in grupos) {
         const secao = document.createElement("div");
@@ -281,7 +326,7 @@ function fechar() {
 
 render();
 
-/* ===== SERVICE WORKER ===== */
+/* SERVICE WORKER */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
