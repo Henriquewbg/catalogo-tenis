@@ -166,6 +166,28 @@ body {
     font-size: 18px;
 }
 
+/* CALENDÁRIO */
+.calendar-day {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.calendar-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.calendar-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    margin-right: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 /* BOTÃO + */
 #btnAdd {
     position: fixed;
@@ -316,14 +338,19 @@ function salvarLocal() {
 /* ===== TABS ===== */
 function trocarAba(aba) {
     abaAtual = aba;
+
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     document.querySelector(`.tab[onclick*="${aba}"]`).classList.add("active");
 
-    catalogo.style.display = aba === "catalogo" ? "block" : "none";
-    ranking.style.display = aba === "ranking" ? "block" : "none";
+    // CONTROLE DE VISIBILIDADE
+    catalogo.style.display   = aba === "catalogo"   ? "block" : "none";
+    ranking.style.display    = aba === "ranking"    ? "block" : "none";
+    calendario.style.display = aba === "calendario" ? "block" : "none";
     areaCatalogo.style.display = aba === "catalogo" ? "block" : "none";
 
-    aba === "ranking" ? renderRanking() : renderCatalogo();
+    // RENDER
+    if (aba === "catalogo")   renderCatalogo();
+    if (aba === "ranking")    renderRanking();
     if (aba === "calendario") renderCalendario();
 }
 
