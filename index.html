@@ -253,6 +253,18 @@ body {
     object-fit: contain;
     margin-bottom: 15px;
 }
+
+.ordenar span {
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 6px;
+    color: #999;
+}
+
+.ordenar span:hover {
+    color: #0f172a;
+}
+
 </style>
 </head>
 
@@ -315,6 +327,7 @@ body {
 <script>
 let tenis = JSON.parse(localStorage.getItem("tenis")) || [];
 let usoPorDia = JSON.parse(localStorage.getItem("usoPorDia")) || {};
+let ordemModelos = JSON.parse(localStorage.getItem("ordemModelos")) || [];
 let imagemBase64 = "";
 let abaAtual = "catalogo";
 
@@ -330,9 +343,35 @@ fotoInput.addEventListener("change", e => {
     reader.readAsDataURL(file);
 });
 
+function garantirOrdemModelos(grupos) {
+    Object.keys(grupos).forEach(modelo => {
+        if (!ordemModelos.includes(modelo)) {
+            ordemModelos.push(modelo);
+        }
+    });
+
+    ordemModelos = ordemModelos.filter(m => grupos[m]);
+    salvarLocal();
+}
+
+function moverModelo(modelo, direcao) {
+    const i = ordemModelos.indexOf(modelo);
+    if (i < 0) return;
+
+    const novoIndex = direcao === "up" ? i - 1 : i + 1;
+    if (novoIndex < 0 || novoIndex >= ordemModelos.length) return;
+
+    [ordemModelos[i], ordemModelos[novoIndex]] =
+    [ordemModelos[novoIndex], ordemModelos[i]];
+
+    salvarLocal();
+    renderCatalogo();
+}
+
 function salvarLocal() {
     localStorage.setItem("tenis", JSON.stringify(tenis));
     localStorage.setItem("usoPorDia", JSON.stringify(usoPorDia));
+    localStorage.setItem("ordemModelos", JSON.stringify(ordemModelos));
 }
 
 /* ===== TABS ===== */
@@ -446,12 +485,26 @@ function renderCatalogo() {
 
     counter.innerText = total === 1 ? "1 item catalogado" : `${total} itens catalogados`;
 
-    for (let modelo in grupos) {
+    garantirOrdemModelos(grupos);
+
+    ordemModelos.forEach(modelo => {
+        const lista = grupos[modelo];
+        if (!lista) return;
+
         const secao = document.createElement("div");
         secao.className = "secao";
-        secao.innerHTML = `<div class="secao-titulo">${modelo.toUpperCase()}</div>`;
+        secao.innerHTML = `
+        <div class="secao-titulo">
+            ${modelo.toUpperCase()}
+            <span style="float:right;">
+                <span class="ordenar">
+                    <span onclick="moverModelo('${modelo}','up')">˄</span>
+                    <span onclick="moverModelo('${modelo}','down')">˅</span>
+                </span>
+            </span>
+        </div>`;
 
-        grupos[modelo].forEach(t => {
+        lista.forEach(t => {
             const item = document.createElement("div");
             item.className = "item";
             item.onclick = () => editarTenis(t.id);
@@ -468,7 +521,7 @@ function renderCatalogo() {
 
         catalogo.appendChild(secao);
     }
-}
+)}
 
 function renderRanking() {
     ranking.innerHTML = "";
