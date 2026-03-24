@@ -9,7 +9,7 @@
 <style>
 body {
     font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    background: #f5f5f5;
+    background: white;
     margin: 0;
 }
 
@@ -18,86 +18,19 @@ body {
     padding: 20px;
 }
 
-/* TABS */
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.tab {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    background: #e5e7eb;
-    border-radius: 10px;
-    font-weight: 600;
-}
-
-.tab.active {
-    background: #0f172a;
-    color: white;
-}
-
-/* BOTÃO ESCOLHER USO */
-.btn-uso-topo {
-    width: 100%;
-    padding: 14px;
-    background: #0f172a;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-/* EM USO */
-.em-uso {
-    background: #0f172a;
-    color: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.em-uso img {
-    width: 70px;
-    border-radius: 8px;
-}
-
-.em-uso span {
-    font-size: 13px;
-    opacity: 0.8;
-}
-
-.em-uso .acoes {
-    margin-left: auto;
-}
-
-.btn-remover-uso {
-    background: #e11d48;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
 /* BUSCA */
 .search-container input {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    width: 91%;
+    padding: 15px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
 }
 
 .counter {
-    margin-top: 6px;
-    font-size: 14px;
+    margin-top: 5px;
+    font-size: 13px;
+    padding: 2px;
     color: #666;
 }
 
@@ -147,47 +80,6 @@ body {
     display: inline-block;
 }
 
-/* RANKING */
-.rank {
-    background: white;
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    align-items: center;
-}
-
-.rank img {
-    width: 80px;
-    margin-right: 15px;
-    border-radius: 8px;
-}
-
-.rank strong {
-    font-size: 18px;
-}
-
-/* CALENDÁRIO */
-.calendar-day {
-    background: white;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-
-.calendar-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.calendar-item img {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
-    margin-right: 10px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
 /* BOTÃO + */
 #btnAdd {
     position: fixed;
@@ -233,20 +125,6 @@ body {
 .btn-cancelar { background: #ccc; }
 .btn-excluir { background: #e11d48; color: white; }
 
-/* LISTA ESCOLHER USO */
-.item-uso {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.item-uso img {
-    width: 70px;
-    margin-right: 12px;
-    border-radius: 8px;
-}
-
 .preview {
     width: 100%;
     max-height: 220px;
@@ -273,15 +151,7 @@ body {
 <div class="header">
     <h1>Minha Coleção</h1>
 
-    <div class="tabs">
-        <div class="tab active" onclick="trocarAba('catalogo')">Catálogo</div>
-        <div class="tab" onclick="trocarAba('ranking')">Ranking</div>
-        <div class="tab" onclick="trocarAba('calendario')">Calendário</div>
-    </div>
-
     <div id="areaCatalogo">
-        <button class="btn-uso-topo" onclick="abrirEscolhaUso()">Escolher tênis em uso</button>
-        <div id="emUsoBox"></div>
 
         <div class="search-container">
             <input id="searchInput" placeholder="Buscar..." oninput="renderCatalogo()">
@@ -291,9 +161,6 @@ body {
 </div>
 
 <div id="catalogo"></div>
-<div id="ranking" style="display:none"></div>
-<div id="calendario" style="display:none"></div>
-
 
 <button id="btnAdd" onclick="novoTenis()">＋</button>
 
@@ -317,20 +184,10 @@ body {
     <button class="btn-excluir" id="btnExcluir" onclick="excluirTenis()">Excluir</button>
 </div>
 
-<!-- OVERLAY ESCOLHER USO -->
-<div class="overlay" id="overlayUso">
-    <h2>Qual tênis você está usando?</h2>
-    <div id="listaUso"></div>
-    <button class="btn-cancelar" onclick="fecharEscolhaUso()">Cancelar</button>
-</div>
-
 <script>
 let tenis = JSON.parse(localStorage.getItem("tenis")) || [];
-let usoPorDia = JSON.parse(localStorage.getItem("usoPorDia")) || {};
 let ordemModelos = JSON.parse(localStorage.getItem("ordemModelos")) || [];
 let imagemBase64 = "";
-let abaAtual = "catalogo";
-
 fotoInput.addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -370,107 +227,10 @@ function moverModelo(modelo, direcao) {
 
 function salvarLocal() {
     localStorage.setItem("tenis", JSON.stringify(tenis));
-    localStorage.setItem("usoPorDia", JSON.stringify(usoPorDia));
     localStorage.setItem("ordemModelos", JSON.stringify(ordemModelos));
 }
 
-/* ===== TABS ===== */
-function trocarAba(aba) {
-    abaAtual = aba;
-
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.querySelector(`.tab[onclick*="${aba}"]`).classList.add("active");
-
-    // CONTROLE DE VISIBILIDADE
-    catalogo.style.display   = aba === "catalogo"   ? "block" : "none";
-    ranking.style.display    = aba === "ranking"    ? "block" : "none";
-    calendario.style.display = aba === "calendario" ? "block" : "none";
-    areaCatalogo.style.display = aba === "catalogo" ? "block" : "none";
-
-    // RENDER
-    if (aba === "catalogo")   renderCatalogo();
-    if (aba === "ranking")    renderRanking();
-    if (aba === "calendario") renderCalendario();
-}
-
-/* ===== USO ===== */
-function abrirEscolhaUso() {
-    listaUso.innerHTML = "";
-    tenis.forEach(t => {
-        const div = document.createElement("div");
-        div.className = "item-uso";
-        div.onclick = () => escolherEmUso(t.id);
-        div.innerHTML = `
-            <img src="${t.foto}">
-            <div>
-                <strong>${t.nome}</strong><br>
-                <small>${t.modelo}</small>
-            </div>
-        `;
-        listaUso.appendChild(div);
-    });
-    overlayUso.style.display = "block";
-}
-
-function fecharEscolhaUso() {
-    overlayUso.style.display = "none";
-}
-
-function escolherEmUso(id) {
-    const agora = Date.now();
-    tenis.forEach(t => t.emUso = false);
-    const t = tenis.find(x => x.id === id);
-    if (t) {
-        t.emUso = true;
-        t.ultimoUso = agora;
-        t.contadorUso = (t.contadorUso || 0) + 1;
-    const hoje = new Date().toISOString().split("T")[0];
-        if (!usoPorDia[hoje]) usoPorDia[hoje] = [];
-        if (!usoPorDia[hoje].includes(id)) usoPorDia[hoje].push(id);
-
-    }
-    salvarLocal();
-    fecharEscolhaUso();
-    renderCatalogo();
-}
-
-function removerEmUso() {
-    tenis.forEach(t => t.emUso = false);
-    salvarLocal();
-    renderCatalogo();
-}
-
-/* ===== RENDER ===== */
-function diasSemUso(t) {
-    if (!t.ultimoUso) return "0 dias";
-    const diff = Date.now() - t.ultimoUso;
-    const dias = Math.floor(diff / 86400000);
-    return dias === 0 ? "0 dias" : `${dias} dia${dias > 1 ? "s" : ""} `;
-}
-
-function renderEmUso() {
-    const t = tenis.find(x => x.emUso);
-    if (!t) {
-        emUsoBox.innerHTML = "";
-        return;
-    }
-
-    emUsoBox.innerHTML = `
-        <div class="em-uso">
-            <img src="${t.foto}">
-            <div>
-                <span>EM USO AGORA</span><br>
-                <strong>${t.nome}</strong>
-            </div>
-            <div class="acoes">
-                <button class="btn-remover-uso" onclick="removerEmUso()">Remover</button>
-            </div>
-        </div>
-    `;
-}
-
 function renderCatalogo() {
-    renderEmUso();
     const busca = searchInput.value.toLowerCase();
     catalogo.innerHTML = "";
     let total = 0;
@@ -512,7 +272,6 @@ function renderCatalogo() {
                 <img src="${t.foto}">
                 <div>
                     <div class="nome">${t.nome}</div>
-                    <div class="info-extra">${diasSemUso(t)}</div>
                     <span class="tag">${t.usado ? "WORN" : "NEW"}</span>
                 </div>
             `;
@@ -522,51 +281,6 @@ function renderCatalogo() {
         catalogo.appendChild(secao);
     }
 )}
-
-function renderRanking() {
-    ranking.innerHTML = "";
-    const ordenado = [...tenis].sort((a,b) => (b.contadorUso||0) - (a.contadorUso||0));
-
-    ordenado.forEach((t, i) => {
-        const div = document.createElement("div");
-        div.className = "rank";
-        div.innerHTML = `
-            <img src="${t.foto}">
-            <div>
-                <strong>#${i+1} ${t.nome}</strong><br>
-                <small>${t.contadorUso || 0} usos</small>
-            </div>
-        `;
-        ranking.appendChild(div);
-    });
-}
-
-function renderCalendario() {
-    calendario.innerHTML = "";
-
-    const dias = Object.keys(usoPorDia).sort().reverse();
-
-    dias.forEach(dia => {
-        const bloco = document.createElement("div");
-        bloco.className = "calendar-day";
-        bloco.innerHTML = `<h3>${dia}</h3>`;
-
-        usoPorDia[dia].forEach(id => {
-            const t = tenis.find(x => x.id === id);
-            if (!t) return;
-
-            const item = document.createElement("div");
-            item.className = "calendar-item";
-            item.innerHTML = `
-                <img src="${t.foto}">
-                <span>${t.nome}</span>
-            `;
-            bloco.appendChild(item);
-        });
-
-        calendario.appendChild(bloco);
-    });
-}
 
 /* ===== CRUD ===== */
 function novoTenis() {
