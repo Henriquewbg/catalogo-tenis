@@ -5,573 +5,354 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vault</title>
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    background: #f5f5f5;
-    margin: 0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#fff}
+.app{background:#111;max-width:390px;margin:0 auto;min-height:100vh}
 
-/* HEADER */
-.header {
-    padding: 20px;
-}
+.topbar{background:#1a1a1a;padding:20px 18px 0;border-bottom:0.5px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:10}
+.topbar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.logo{font-size:13px;font-weight:500;letter-spacing:5px;color:#fff}
+.ib{width:38px;height:38px;border-radius:50%;border:0.5px solid rgba(255,255,255,0.2);background:transparent;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;flex-shrink:0}
+.ib:hover{background:rgba(255,255,255,0.08)}
+.ib svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* TABS */
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
+.srch{position:relative;margin-bottom:14px}
+.srch input{width:100%;padding:11px 16px 11px 40px;border-radius:100px;border:0.5px solid rgba(255,255,255,0.1);background:#2a2a2a;font-size:14px;color:#fff}
+.srch input::placeholder{color:#666}
+.srch svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:#666;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 
-.tab {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    background: #e5e7eb;
-    border-radius: 10px;
-    font-weight: 600;
-}
+.nav-tabs{display:flex}
+.nav-tab{flex:1;padding:12px 8px;font-size:13px;font-weight:500;text-align:center;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:transparent;border-left:none;border-right:none;border-top:none}
+.nav-tab.on{color:#fff;border-bottom-color:#fff}
 
-.tab.active {
-    background: #0f172a;
-    color: white;
-}
+.pills{display:flex;gap:6px;padding:12px 14px 0;overflow-x:auto;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:7px 16px;border-radius:100px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;border:0.5px solid rgba(255,255,255,0.2);color:#aaa;background:transparent}
+.pill.on{background:#fff;color:#111;border-color:transparent}
 
-/* BOTÃO ESCOLHER USO */
-.btn-uso-topo {
-    width: 100%;
-    padding: 14px;
-    background: #0f172a;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    margin-bottom: 10px;
-}
+.portfolio{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+.pcard{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px}
+.pcard .val{font-size:18px;font-weight:500;color:#fff;margin-top:2px}
+.pcard .lbl{font-size:9px;letter-spacing:2px;color:#666;font-weight:500}
 
-/* EM USO */
-.em-uso {
-    background: #0f172a;
-    color: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 24px}
+.scard{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;cursor:pointer}
+.scard:hover{border-color:rgba(255,255,255,0.25)}
+.scard-img{height:110px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden}
+.scard-img img{width:100%;height:100%;object-fit:cover}
+.scard-body{padding:10px 12px 12px}
+.scard-brand{font-size:9px;letter-spacing:2.5px;color:#666;font-weight:500;margin-bottom:3px}
+.scard-name{font-size:13px;font-weight:500;color:#fff;line-height:1.3;margin-bottom:8px;min-height:34px}
+.price-row{display:flex;justify-content:space-between;align-items:flex-end}
+.price-paid{font-size:10px;color:#666}
+.price-sell{font-size:13px;font-weight:500}
+.price-sell.none{color:#555;font-size:11px;font-weight:400}
+.price-sell.profit{color:#4ade80}
+.price-sell.loss{color:#f87171}
 
-.em-uso img {
-    width: 70px;
-    border-radius: 8px;
-}
-
-.em-uso span {
-    font-size: 13px;
-    opacity: 0.8;
-}
-
-.em-uso .acoes {
-    margin-left: auto;
-}
-
-.btn-remover-uso {
-    background: #e11d48;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-/* BUSCA */
-.search-container input {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-.counter {
-    margin-top: 6px;
-    font-size: 14px;
-    color: #666;
-}
-
-/* LISTA */
-.secao {
-    background: white;
-    margin-bottom: 10px;
-}
+.empty{text-align:center;padding:48px 24px;color:#555;font-size:14px;grid-column:span 2}
 
 .sales-section{padding:14px}
 .sec-title{font-size:9px;letter-spacing:2px;color:#666;font-weight:500;margin-bottom:12px}
 .chart-wrap{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:14px}
 .chart-area{position:relative;height:180px;margin-top:8px}
 
-.item {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-}
+.sale-row{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.sale-row:hover{border-color:rgba(255,255,255,0.2)}
+.sale-ico{width:48px;height:48px;border-radius:10px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
+.sale-ico img{width:100%;height:100%;object-fit:cover}
+.sale-info{flex:1;min-width:0}
+.sale-brand{font-size:9px;letter-spacing:2px;color:#666;font-weight:500}
+.sale-name{font-size:14px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sale-date{font-size:11px;color:#555;margin-top:2px}
+.sale-right{text-align:right;flex-shrink:0}
+.sale-profit{font-size:15px;font-weight:500}
+.sale-profit.pos{color:#4ade80}
+.sale-profit.neg{color:#f87171}
+.sale-profit.zero{color:#aaa}
+.sale-sub{font-size:10px;color:#555}
+.no-sales{text-align:center;padding:40px 20px;color:#555;font-size:14px;background:#1a1a1a;border-radius:16px;border:0.5px solid rgba(255,255,255,0.08)}
 
-.item img {
-    width: 100px;
-    margin-right: 15px;
-    border-radius: 8px;
-}
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;z-index:100}
+.sheet{background:#1a1a1a;border-radius:24px 24px 0 0;padding:10px 20px 32px;width:100%;max-height:92vh;overflow-y:auto}
+.drag{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);margin:0 auto 22px}
+.sh-title{font-size:18px;font-weight:500;color:#fff;margin-bottom:20px}
+.fl{display:flex;flex-direction:column;gap:12px}
+.fg label{font-size:9px;letter-spacing:2px;color:#888;display:block;margin-bottom:6px;font-weight:500}
+.fg input,.fg select,.fg textarea{width:100%;padding:13px 14px;border-radius:12px;border:0.5px solid rgba(255,255,255,0.15);background:#2a2a2a;font-size:15px;color:#fff;font-family:inherit}
+.fg input::placeholder,.fg textarea::placeholder{color:#555}
+.fg textarea{resize:none;height:72px;line-height:1.5}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.divider{height:0.5px;background:rgba(255,255,255,0.08);margin:4px 0}
 
-.nome {
-    font-size: 18px;
-    font-weight: 600;
-}
+.img-picker{width:100%;height:100px;border-radius:12px;border:0.5px dashed rgba(255,255,255,0.2);background:#2a2a2a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;overflow:hidden;position:relative}
+.img-picker img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.img-picker-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(0,0,0,0.5);border-radius:12px}
+.img-picker-overlay svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.img-picker-overlay span{font-size:11px;color:#fff;letter-spacing:1px;font-weight:500}
+.img-picker-empty svg{width:22px;height:22px;stroke:#555;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.img-picker-empty span{font-size:11px;color:#555;letter-spacing:1px;font-weight:500}
 
-.info-extra {
-    font-size: 13px;
-    color: #666;
-}
+.sold-toggle{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.toggle-track{width:44px;height:26px;border-radius:100px;border:0.5px solid rgba(255,255,255,0.2);background:#2a2a2a;position:relative;cursor:pointer;flex-shrink:0}
+.toggle-track.on{background:#fff;border-color:#fff}
+.toggle-thumb{width:20px;height:20px;border-radius:50%;background:#888;position:absolute;top:2px;left:2px;transition:transform 0.15s}
+.toggle-track.on .toggle-thumb{background:#111;transform:translateX(18px)}
+.toggle-lbl{font-size:14px;color:#fff}
 
-.tag {
-    background: #eee;
-    font-size: 12px;
-    padding: 4px 6px;
-    border-radius: 3px;
-    margin-top: 6px;
-    display: inline-block;
-}
+.btn-save{width:100%;padding:15px;border-radius:12px;background:#fff;color:#111;border:none;font-size:15px;font-weight:500;cursor:pointer;margin-top:6px}
+.btn-save:hover{opacity:0.87}
+.btn-cancel{width:100%;padding:15px;border-radius:12px;background:#2a2a2a;color:#aaa;border:0.5px solid rgba(255,255,255,0.15);font-size:15px;cursor:pointer}
+.btn-del{width:100%;padding:13px;border-radius:12px;background:rgba(220,38,38,0.15);color:#f87171;border:none;font-size:14px;cursor:pointer;margin-top:4px}
 
-/* RANKING */
-.rank {
-    background: white;
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    align-items: center;
-}
+.det-wrap{position:fixed;inset:0;background:#111;z-index:100;overflow-y:auto}
+.det-hero{height:220px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:80px;position:relative;overflow:hidden}
+.det-hero img{width:100%;height:100%;object-fit:cover}
+.det-back,.det-edit{position:absolute;top:16px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.6);border:0.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.det-back{left:16px}
+.det-edit{right:16px}
+.det-back svg,.det-edit svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.rank img {
-    width: 80px;
-    margin-right: 15px;
-    border-radius: 8px;
-}
+.det-body{padding:20px}
+.det-brand{font-size:10px;letter-spacing:3px;color:#666;font-weight:500}
+.det-name{font-size:22px;font-weight:500;color:#fff;margin:6px 0 18px;line-height:1.2}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.det-block{background:#1a1a1a;border-radius:12px;padding:14px;border:0.5px solid rgba(255,255,255,0.06)}
+.det-block .lbl{font-size:9px;letter-spacing:2px;color:#555;font-weight:500}
+.det-block .v{font-size:16px;font-weight:500;color:#fff;margin-top:4px}
+.det-block .v.green{color:#4ade80}
+.det-block .v.red{color:#f87171}
+.det-block .v.muted{font-weight:400;color:#555;font-size:13px}
 
-.rank strong {
-    font-size: 18px;
-}
+.profit-card{border-radius:12px;padding:14px;margin-bottom:14px;background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.06)}
+.profit-card .lbl{font-size:9px;letter-spacing:2px;color:#555;font-weight:500;margin-bottom:6px}
+.profit-row{display:flex;align-items:baseline;gap:8px}
+.profit-num{font-size:24px;font-weight:500}
+.profit-num.pos{color:#4ade80}
+.profit-num.neg{color:#f87171}
+.profit-num.zero{color:#aaa}
+.profit-pct{font-size:13px;color:#666}
 
-/* CALENDÁRIO */
-.calendar-day {
-    background: white;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-
-.calendar-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.calendar-item img {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
-    margin-right: 10px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-/* BOTÃO + */
-#btnAdd {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    font-size: 28px;
-    background: #0f172a;
-    color: white;
-    border: none;
-}
-
-/* OVERLAYS */
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: white;
-    display: none;
-    z-index: 1000;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.overlay input,
-.overlay select {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    margin-bottom: 15px;
-}
-
-.overlay button {
-    width: 100%;
-    padding: 16px;
-    margin-bottom: 10px;
-    border: none;
-    font-size: 16px;
-}
-
-.btn-salvar { background: #0f172a; color: white; }
-.btn-cancelar { background: #ccc; }
-.btn-excluir { background: #e11d48; color: white; }
-
-/* LISTA ESCOLHER USO */
-.item-uso {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.item-uso img {
-    width: 70px;
-    margin-right: 12px;
-    border-radius: 8px;
-}
-
-.preview {
-    width: 100%;
-    max-height: 220px;
-    object-fit: contain;
-    margin-bottom: 15px;
-}
-
-.ordenar span {
-    cursor: pointer;
-    font-size: 16px;
-    margin-left: 6px;
-    color: #999;
-}
-
-.ordenar span:hover {
-    color: #0f172a;
-}
-
+.det-notes{background:#1a1a1a;border-radius:12px;padding:14px;margin-bottom:14px;border:0.5px solid rgba(255,255,255,0.06)}
+.det-notes .lbl{font-size:9px;letter-spacing:2px;color:#555;font-weight:500;margin-bottom:6px}
+.det-notes .txt{font-size:14px;color:#aaa;line-height:1.6}
+.sold-badge{font-size:9px;letter-spacing:1.5px;font-weight:500;padding:3px 8px;border-radius:100px;background:rgba(74,222,128,0.15);color:#4ade80;display:inline-block;margin-bottom:6px}
 </style>
 </head>
 <body>
-
-<div class="header">
-    <h1>Minha Coleção</h1>
-
-    <div class="tabs">
-        <div class="tab active" onclick="trocarAba('catalogo')">Catálogo</div>
-        <div class="tab" onclick="trocarAba('ranking')">Ranking</div>
-        <div class="tab" onclick="trocarAba('calendario')">Calendário</div>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-head">
+      <span class="logo">VAULT</span>
+      <button class="ib" onclick="showAdd()" aria-label="Adicionar par">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
     </div>
-
-    <div id="areaCatalogo">
-        <button class="btn-uso-topo" onclick="abrirEscolhaUso()">Escolher tênis em uso</button>
-        <div id="emUsoBox"></div>
-
-        <div class="search-container">
-            <input id="searchInput" placeholder="Buscar..." oninput="renderCatalogo()">
-            <div class="counter" id="counter"></div>
-        </div>
+    <div class="srch" id="srchWrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="srchInput" placeholder="Buscar modelo ou marca..." oninput="render()">
     </div>
+    <div class="nav-tabs">
+      <button class="nav-tab on" onclick="switchTab('collection')" id="tab-collection">Coleção</button>
+      <button class="nav-tab" onclick="switchTab('sales')" id="tab-sales">Vendas</button>
+    </div>
+  </div>
+  <div id="collectionView"></div>
+  <div id="salesView" style="display:none"></div>
+  <div id="addMount"></div>
+  <div id="detMount"></div>
 </div>
 
-<div id="catalogo"></div>
-<div id="ranking" style="display:none"></div>
-<div id="calendario" style="display:none"></div>
-
-
-<button id="btnAdd" onclick="novoTenis()">＋</button>
-
-<!-- OVERLAY CADASTRO -->
-<div class="overlay" id="overlay">
-    <h2 id="tituloForm">Novo Tênis</h2>
-    <input type="hidden" id="editId">
-    <input id="modeloInput" placeholder="Modelo">
-    <input id="nomeInput" placeholder="Nome">
-
-    <select id="usadoInput">
-        <option value="false">NEW</option>
-        <option value="true">WORN</option>
-    </select>
-
-    <input type="file" accept="image/*" id="fotoInput">
-    <img id="preview" class="preview" style="display:none">
-
-    <button class="btn-salvar" onclick="salvarTenis()">Salvar</button>
-    <button class="btn-cancelar" onclick="fechar()">Cancelar</button>
-    <button class="btn-excluir" id="btnExcluir" onclick="excluirTenis()">Excluir</button>
-</div>
-
-<!-- OVERLAY ESCOLHER USO -->
-<div class="overlay" id="overlayUso">
-    <h2>Qual tênis você está usando?</h2>
-    <div id="listaUso"></div>
-    <button class="btn-cancelar" onclick="fecharEscolhaUso()">Cancelar</button>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-let tenis = JSON.parse(localStorage.getItem("tenis")) || [];
-let usoPorDia = JSON.parse(localStorage.getItem("usoPorDia")) || {};
-let ordemModelos = JSON.parse(localStorage.getItem("ordemModelos")) || [];
-let imagemBase64 = "";
-let abaAtual = "catalogo";
+const SVG_PLUS = `<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const SVG_CAMERA = `<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+const SVG_BACK = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`;
+const SVG_EDIT = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#111;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const SVG_TRASH = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
-fotoInput.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-        imagemBase64 = reader.result;
-        preview.src = imagemBase64;
-        preview.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-});
+let data = JSON.parse(localStorage.getItem('vault4') || 'null');
+if (!data) {
+  data = [
+    {id:1,brand:'Nike',model:'Air Force 1 Low White',size:'42',paid:'599',sell:'750',notes:'Box perfeita',sold:false,soldDate:'',photo:''},
+    {id:2,brand:'Jordan Brand',model:'Air Jordan 1 High OG Chicago',size:'43',paid:'1299',sell:'3200',notes:'Deadstock',sold:true,soldDate:'2025-03-12',photo:''},
+    {id:3,brand:'Adidas',model:'Yeezy Boost 350 V2 Zebra',size:'42',paid:'2100',sell:'2800',notes:'',sold:false,soldDate:'',photo:''},
+    {id:4,brand:'Nike',model:'Dunk Low Panda',size:'42',paid:'799',sell:'',notes:'Usando agora',sold:false,soldDate:'',photo:''},
+    {id:5,brand:'New Balance',model:'990v3 Made in USA Grey',size:'41',paid:'1100',sell:'1400',notes:'',sold:false,soldDate:'',photo:''},
+    {id:6,brand:'Jordan Brand',model:'Air Jordan 4 Retro Bred',size:'43',paid:'1899',sell:'4500',notes:'Lançamento',sold:true,soldDate:'2025-11-02',photo:''},
+  ];
+  save();
+}
 
-function garantirOrdemModelos(grupos) {
-    Object.keys(grupos).forEach(modelo => {
-        if (!ordemModelos.includes(modelo)) {
-            ordemModelos.push(modelo);
-        }
+let activeTab='collection', brandFilter='Todos', chartInst=null, pendingPhoto=null;
+
+const emojis={Nike:'👟','Jordan Brand':'🏀',Adidas:'🔱','New Balance':'🔵',Puma:'🐆',Converse:'⭐',Vans:'🛹'};
+function ico(b){return emojis[b]||'👟'}
+function save(){localStorage.setItem('vault4',JSON.stringify(data))}
+function num(v){if(!v)return 0;return parseFloat(String(v).replace(/\D/g,''))||0}
+function fmt(v){const n=num(v);if(!n)return null;return 'R$ '+n.toLocaleString('pt-BR')}
+function fmtDate(d){if(!d)return '';try{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return d}}
+
+function switchTab(t){
+  activeTab=t;
+  document.getElementById('tab-collection').classList.toggle('on',t==='collection');
+  document.getElementById('tab-sales').classList.toggle('on',t==='sales');
+  document.getElementById('srchWrap').style.display=t==='collection'?'block':'none';
+  document.getElementById('collectionView').style.display=t==='collection'?'block':'none';
+  document.getElementById('salesView').style.display=t==='sales'?'block':'none';
+  if(t==='sales') renderSales();
+}
+
+function render(){
+  const active=data.filter(d=>!d.sold);
+  const q=document.getElementById('srchInput').value.toLowerCase();
+  const brands=[...new Set(active.map(d=>d.brand))];
+  if(!brands.includes(brandFilter)&&brandFilter!=='Todos') brandFilter='Todos';
+  const filtered=active.filter(d=>`${d.brand} ${d.model}`.toLowerCase().includes(q)&&(brandFilter==='Todos'||d.brand===brandFilter));
+  const totalPaid=active.reduce((s,d)=>s+num(d.paid),0);
+  const sold=data.filter(d=>d.sold);
+  const realProfit=sold.reduce((s,d)=>s+(num(d.sell)-num(d.paid)),0);
+  const profitColor=realProfit>=0?'#4ade80':'#f87171';
+  const profitSign=realProfit>=0?'+ ':'- ';
+  const pillsHtml=['Todos',...brands].map(p=>`<div class="pill ${p===brandFilter?'on':''}" onclick="setBrand('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('');
+  const cardsHtml=filtered.length===0?'<div class="empty">Nenhum tênis encontrado</div>':filtered.map(d=>{
+    const paidN=num(d.paid),sellN=num(d.sell),hasSell=d.sell&&d.sell!=='';
+    let sc='none',sl='sem preço';
+    if(hasSell){sl=fmt(d.sell);sc=sellN>paidN?'profit':sellN<paidN?'loss':'';}
+    const img=d.photo?`<img src="${d.photo}" alt="${d.model}">`:`<span style="font-size:48px">${ico(d.brand)}</span>`;
+    return `<div class="scard" onclick="showDetail(${d.id})"><div class="scard-img">${img}</div><div class="scard-body"><div class="scard-brand">${d.brand.toUpperCase()}</div><div class="scard-name">${d.model}</div><div class="price-row"><div class="price-paid">${fmt(d.paid)||'—'}</div><div class="price-sell ${sc}">${sl}</div></div></div></div>`;
+  }).join('');
+  document.getElementById('collectionView').innerHTML=`
+    <div class="pills">${pillsHtml}</div>
+    <div class="portfolio">
+      <div class="pcard"><div class="lbl">PARES</div><div class="val">${active.length}</div></div>
+      <div class="pcard"><div class="lbl">INVESTIDO</div><div class="val" style="font-size:15px">R$ ${totalPaid.toLocaleString('pt-BR')}</div></div>
+      <div class="pcard"><div class="lbl">VENDIDOS</div><div class="val">${sold.length}</div></div>
+      <div class="pcard"><div class="lbl">LUCRO REAL</div><div class="val" style="font-size:15px;color:${profitColor}">${profitSign}R$ ${Math.abs(realProfit).toLocaleString('pt-BR')}</div></div>
+    </div>
+    <div class="grid">${cardsHtml}</div>`;
+}
+
+function setBrand(b){brandFilter=b;render()}
+
+function renderSales(){
+  const sold=data.filter(d=>d.sold);
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  const totalSold=sold.reduce((s,d)=>s+num(d.sell),0);
+  const totalCost=sold.reduce((s,d)=>s+num(d.paid),0);
+  const totalProfit=totalSold-totalCost;
+  const pc=totalProfit>=0?'#4ade80':'#f87171';
+  const chartHtml=sold.length>0?`<div class="chart-wrap"><div style="font-size:9px;letter-spacing:2px;color:#666;font-weight:500">LUCRO POR PAR</div><div class="chart-area"><canvas id="profitChart"></canvas></div></div>`:'';
+  const listHtml=sold.length===0?'<div class="no-sales">Nenhuma venda registrada ainda.<br>Edite um tênis e marque como vendido.</div>':sold.map(d=>{
+    const profit=num(d.sell)-num(d.paid),pct=num(d.paid)>0?((profit/num(d.paid))*100):0;
+    const cls=profit>0?'pos':profit<0?'neg':'zero',sign=profit>0?'+ ':'';
+    const img=d.photo?`<img src="${d.photo}" alt="${d.model}">`:`${ico(d.brand)}`;
+    return `<div class="sale-row" onclick="showDetail(${d.id})"><div class="sale-ico">${img}</div><div class="sale-info"><div class="sale-brand">${d.brand.toUpperCase()}</div><div class="sale-name">${d.model}</div><div class="sale-date">${fmtDate(d.soldDate)}</div></div><div class="sale-right"><div class="sale-profit ${cls}">${sign}R$ ${Math.abs(profit).toLocaleString('pt-BR')}</div><div class="sale-sub">${pct>=0?'+':''}${pct.toFixed(1)}%</div></div></div>`;
+  }).join('');
+  document.getElementById('salesView').innerHTML=`<div class="sales-section"><div class="portfolio" style="padding-bottom:0"><div class="pcard"><div class="lbl">VENDIDOS</div><div class="val">${sold.length}</div></div><div class="pcard"><div class="lbl">LUCRO TOTAL</div><div class="val" style="font-size:15px;color:${pc}">R$ ${Math.abs(totalProfit).toLocaleString('pt-BR')}</div></div><div class="pcard"><div class="lbl">RECEBIDO</div><div class="val" style="font-size:14px">R$ ${totalSold.toLocaleString('pt-BR')}</div></div><div class="pcard"><div class="lbl">CUSTO TOTAL</div><div class="val" style="font-size:14px">R$ ${totalCost.toLocaleString('pt-BR')}</div></div></div>${chartHtml}<div style="margin-top:14px"><div class="sec-title">HISTÓRICO DE VENDAS</div>${listHtml}</div><div style="height:24px"></div></div>`;
+  if(sold.length>0){
+    requestAnimationFrame(()=>{
+      const canvas=document.getElementById('profitChart');
+      if(!canvas)return;
+      const labels=sold.map(d=>d.model.length>14?d.model.slice(0,14)+'…':d.model);
+      const profits=sold.map(d=>num(d.sell)-num(d.paid));
+      chartInst=new Chart(canvas,{type:'bar',data:{labels,datasets:[{data:profits,backgroundColor:profits.map(p=>p>=0?'rgba(74,222,128,0.2)':'rgba(248,113,113,0.2)'),borderColor:profits.map(p=>p>=0?'#4ade80':'#f87171'),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'R$ '+Math.abs(ctx.raw).toLocaleString('pt-BR')}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#555'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{font:{size:11},color:'#555',callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
     });
-
-    ordemModelos = ordemModelos.filter(m => grupos[m]);
-    salvarLocal();
+  }
 }
 
-function moverModelo(modelo, direcao) {
-    const i = ordemModelos.indexOf(modelo);
-    if (i < 0) return;
-
-    const novoIndex = direcao === "up" ? i - 1 : i + 1;
-    if (novoIndex < 0 || novoIndex >= ordemModelos.length) return;
-
-    [ordemModelos[i], ordemModelos[novoIndex]] =
-    [ordemModelos[novoIndex], ordemModelos[i]];
-
-    salvarLocal();
-    renderCatalogo();
-}
-
-function salvarLocal() {
-    localStorage.setItem("tenis", JSON.stringify(tenis));
-    localStorage.setItem("usoPorDia", JSON.stringify(usoPorDia));
-    localStorage.setItem("ordemModelos", JSON.stringify(ordemModelos));
-}
-
-/* ===== TABS ===== */
-function trocarAba(aba) {
-    abaAtual = aba;
-
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.querySelector(`.tab[onclick*="${aba}"]`).classList.add("active");
-
-    // CONTROLE DE VISIBILIDADE
-    catalogo.style.display   = aba === "catalogo"   ? "block" : "none";
-    ranking.style.display    = aba === "ranking"    ? "block" : "none";
-    calendario.style.display = aba === "calendario" ? "block" : "none";
-    areaCatalogo.style.display = aba === "catalogo" ? "block" : "none";
-
-    // RENDER
-    if (aba === "catalogo")   renderCatalogo();
-    if (aba === "ranking")    renderRanking();
-    if (aba === "calendario") renderCalendario();
-}
-
-/* ===== USO ===== */
-function abrirEscolhaUso() {
-    listaUso.innerHTML = "";
-    tenis.forEach(t => {
-        const div = document.createElement("div");
-        div.className = "item-uso";
-        div.onclick = () => escolherEmUso(t.id);
-        div.innerHTML = `
-            <img src="${t.foto}">
-            <div>
-                <strong>${t.nome}</strong><br>
-                <small>${t.modelo}</small>
+function showAdd(existing){
+  pendingPhoto=existing?(existing.photo||null):null;
+  const d=existing||{id:null,brand:'',model:'',size:'',paid:'',sell:'',notes:'',sold:false,soldDate:'',photo:''};
+  const isSold=d.sold||false;
+  document.getElementById('addMount').innerHTML=`
+    <div class="modal-wrap" onclick="closeAdd(event)">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="drag"></div>
+        <div class="sh-title">${d.id?'Editar par':'Novo par'}</div>
+        <div class="fl">
+          <div class="fg">
+            <label>FOTO</label>
+            <div class="img-picker" id="imgPicker" onclick="document.getElementById('photoFileInput').click()">
+              ${pendingPhoto
+                ?`<img src="${pendingPhoto}" alt="preview"><div class="img-picker-overlay">${SVG_CAMERA}<span>TROCAR</span></div>`
+                :`<div class="img-picker-empty">${SVG_CAMERA}<span>ADICIONAR FOTO</span></div>`}
             </div>
-        `;
-        listaUso.appendChild(div);
-    });
-    overlayUso.style.display = "block";
-}
-
-function fecharEscolhaUso() {
-    overlayUso.style.display = "none";
-}
-
-function escolherEmUso(id) {
-    const agora = Date.now();
-    tenis.forEach(t => t.emUso = false);
-    const t = tenis.find(x => x.id === id);
-    if (t) {
-        t.emUso = true;
-        t.ultimoUso = agora;
-        t.contadorUso = (t.contadorUso || 0) + 1;
-    const hoje = new Date().toISOString().split("T")[0];
-        if (!usoPorDia[hoje]) usoPorDia[hoje] = [];
-        if (!usoPorDia[hoje].includes(id)) usoPorDia[hoje].push(id);
-
-    }
-    salvarLocal();
-    fecharEscolhaUso();
-    renderCatalogo();
-}
-
-function removerEmUso() {
-    tenis.forEach(t => t.emUso = false);
-    salvarLocal();
-    renderCatalogo();
-}
-
-/* ===== RENDER ===== */
-function diasSemUso(t) {
-    if (!t.ultimoUso) return "0 dias";
-    const diff = Date.now() - t.ultimoUso;
-    const dias = Math.floor(diff / 86400000);
-    return dias === 0 ? "0 dias" : `${dias} dia${dias > 1 ? "s" : ""} `;
-}
-
-function renderEmUso() {
-    const t = tenis.find(x => x.emUso);
-    if (!t) {
-        emUsoBox.innerHTML = "";
-        return;
-    }
-
-    emUsoBox.innerHTML = `
-        <div class="em-uso">
-            <img src="${t.foto}">
-            <div>
-                <span>EM USO AGORA</span><br>
-                <strong>${t.nome}</strong>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+          </div>
+          <div class="fg"><label>MARCA</label><input id="f-brand" value="${d.brand}" placeholder="Nike, Jordan, Adidas..."></div>
+          <div class="fg"><label>MODELO</label><input id="f-model" value="${d.model}" placeholder="Air Jordan 1 High OG..."></div>
+          <div class="fr">
+            <div class="fg"><label>NÚMERO</label><input id="f-size" value="${d.size}" placeholder="42"></div>
+            <div class="fg"><label>VALOR PAGO</label><input id="f-paid" value="${d.paid}" placeholder="R$ 0"></div>
+          </div>
+          <div class="fg"><label>PREÇO DE VENDA</label><input id="f-sell" value="${d.sell}" placeholder="Deixe vazio se não quiser vender"></div>
+          <div class="fg"><label>OBSERVAÇÕES</label><textarea id="f-notes" placeholder="Condição, onde comprou...">${d.notes||''}</textarea></div>
+          <div class="divider"></div>
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;color:#888;font-weight:500;margin-bottom:10px">REGISTRO DE VENDA</div>
+            <div class="sold-toggle">
+              <div class="toggle-track ${isSold?'on':''}" id="soldTrack" onclick="toggleSold()"><div class="toggle-thumb"></div></div>
+              <span class="toggle-lbl" id="soldLbl">${isSold?'Vendido':'Marcar como vendido'}</span>
             </div>
-            <div class="acoes">
-                <button class="btn-remover-uso" onclick="removerEmUso()">Remover</button>
+            <div id="soldDateWrap" style="display:${isSold?'block':'none'}">
+              <div class="fg"><label>DATA DA VENDA</label><input type="date" id="f-soldDate" value="${d.soldDate||''}"></div>
             </div>
+          </div>
+          <button class="btn-save" onclick="saveItem(${d.id||'null'})">Salvar</button>
+          <button class="btn-cancel" onclick="closeAdd()">Cancelar</button>
+          ${d.id?`<button class="btn-del" onclick="deleteItem(${d.id})">${SVG_TRASH} Excluir par</button>`:''}
         </div>
-    `;
+      </div>
+    </div>`;
 }
 
-function renderCatalogo() {
-    renderEmUso();
-    const busca = searchInput.value.toLowerCase();
-    catalogo.innerHTML = "";
-    let total = 0;
-    const grupos = {};
-
-    tenis.forEach(t => {
-        if (!`${t.modelo} ${t.nome}`.toLowerCase().includes(busca)) return;
-        if (!grupos[t.modelo]) grupos[t.modelo] = [];
-        grupos[t.modelo].push(t);
-        total++;
-    });
-
-    counter.innerText = total === 1 ? "1 item catalogado" : `${total} itens catalogados`;
-
-    garantirOrdemModelos(grupos);
-
-    ordemModelos.forEach(modelo => {
-        const lista = grupos[modelo];
-        if (!lista) return;
-
-        const secao = document.createElement("div");
-        secao.className = "secao";
-        secao.innerHTML = `
-        <div class="secao-titulo">
-            ${modelo.toUpperCase()}
-            <span style="float:right;">
-                <span class="ordenar">
-                    <span onclick="moverModelo('${modelo}','up')">˄</span>
-                    <span onclick="moverModelo('${modelo}','down')">˅</span>
-                </span>
-            </span>
-        </div>`;
-
-        lista.forEach(t => {
-            const item = document.createElement("div");
-            item.className = "item";
-            item.onclick = () => editarTenis(t.id);
-            item.innerHTML = `
-                <img src="${t.foto}">
-                <div>
-                    <div class="nome">${t.nome}</div>
-                    <div class="info-extra">${diasSemUso(t)}</div>
-                    <span class="tag">${t.usado ? "WORN" : "NEW"}</span>
-                </div>
-            `;
-            secao.appendChild(item);
-        });
-
-        catalogo.appendChild(secao);
-    }
-)}
-
-function renderRanking() {
-    ranking.innerHTML = "";
-    const ordenado = [...tenis].sort((a,b) => (b.contadorUso||0) - (a.contadorUso||0));
-
-    ordenado.forEach((t, i) => {
-        const div = document.createElement("div");
-        div.className = "rank";
-        div.innerHTML = `
-            <img src="${t.foto}">
-            <div>
-                <strong>#${i+1} ${t.nome}</strong><br>
-                <small>${t.contadorUso || 0} usos</small>
-            </div>
-        `;
-        ranking.appendChild(div);
-    });
+function handlePhoto(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    pendingPhoto=ev.target.result;
+    const picker=document.getElementById('imgPicker');
+    if(picker)picker.innerHTML=`<img src="${pendingPhoto}" alt="preview"><div class="img-picker-overlay">${SVG_CAMERA}<span>TROCAR</span></div>`;
+  };
+  reader.readAsDataURL(file);
 }
 
-function renderCalendario() {
-    calendario.innerHTML = "";
-
-    const dias = Object.keys(usoPorDia).sort().reverse();
-
-    dias.forEach(dia => {
-        const bloco = document.createElement("div");
-        bloco.className = "calendar-day";
-        bloco.innerHTML = `<h3>${dia}</h3>`;
-
-        usoPorDia[dia].forEach(id => {
-            const t = tenis.find(x => x.id === id);
-            if (!t) return;
-
-            const item = document.createElement("div");
-            item.className = "calendar-item";
-            item.innerHTML = `
-                <img src="${t.foto}">
-                <span>${t.nome}</span>
-            `;
-            bloco.appendChild(item);
-        });
-
-        calendario.appendChild(bloco);
-    });
+function toggleSold(){
+  const track=document.getElementById('soldTrack');
+  const on=track.classList.toggle('on');
+  document.getElementById('soldLbl').textContent=on?'Vendido':'Marcar como vendido';
+  document.getElementById('soldDateWrap').style.display=on?'block':'none';
 }
 
-/* ===== CRUD ===== */
-function novoTenis() {
-    tituloForm.innerText = "Novo Tênis";
-    editId.value = "";
-    modeloInput.value = nomeInput.value = "";
-    usadoInput.value = "false";
-    imagemBase64 = "";
-    preview.style.display = "none";
-    btnExcluir.style.display = "none";
-    overlay.style.display = "block";
+function closeAdd(e){
+  if(!e||e.target.classList.contains('modal-wrap')){document.getElementById('addMount').innerHTML='';pendingPhoto=null;}
+}
+
+function saveItem(id){
+  const brand=document.getElementById('f-brand').value.trim()||'Outros';
+  const model=document.getElementById('f-model').value.trim()||'Sem nome';
+  const size=document.getElementById('f-size').value.trim();
+  const paid=document.getElementById('f-paid').value.replace(/\D/g,'');
+  const sell=document.getElementById('f-sell').value.replace(/\D/g,'');
+  const notes=document.getElementById('f-notes').value.trim();
+  const sold=document.getElementById('soldTrack').classList.contains('on');
+  const soldDate=(document.getElementById('f-soldDate')||{}).value||'';
+  const photo=pendingPhoto!==null?pendingPhoto:(id?(data.find(d=>d.id===id)||{}).photo||'':'');
+  const obj={brand,model,size,paid,sell,notes,sold,soldDate,photo};
+  if(id){Object.assign(data.find(d=>d.id===id),obj);}else{data.push({id:Date.now(),...obj});}
+  save();pendingPhoto=null;
+  document.getElementById('addMount').innerHTML='';
+  document.getElementById('detMount').innerHTML='';
+  render();if(activeTab==='sales')renderSales();
+}
+
+function deleteItem(id){
+  data=data.filter(d=>d.id!=id);save();pendingPhoto=null;
+  document.getElementById('addMount').innerHTML='';
+  document.getElementById('detMount').innerHTML='';
+  render();if(activeTab==='sales')renderSales();
 }
 
 function showDetail(id){
