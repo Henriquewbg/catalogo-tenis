@@ -424,10 +424,7 @@ function renderWishlist(){
       }).join('');
 
   document.getElementById('wishlistView').innerHTML=`
-    <div class="portfolio">
-      <div class="pcard"><div class="lbl">NA LISTA</div><div class="val">${wl.length}</div></div>
-      <div class="pcard"><div class="lbl">RETAIL TOTAL</div><div class="val" style="font-size:14px">R$ ${wl.reduce((s,w)=>s+num(w.retail),0).toLocaleString('pt-BR')}</div></div>
-    </div>
+
     <div class="grid">${cardsHtml}</div>
     <button class="add-btn" onclick="showWishAdd()">
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#111;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
