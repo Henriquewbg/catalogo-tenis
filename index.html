@@ -51,6 +51,8 @@ body{background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ari
 .price-sell.loss{color:#f87171}
 
 .empty{text-align:center;padding:48px 24px;color:#555;font-size:14px;grid-column:span 2}
+.add-btn{margin:0 14px 24px;border-radius:16px;background:#fff;color:#111;border:none;padding:15px;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;width:calc(100% - 28px)}
+.add-btn:hover{opacity:0.87}
 
 .sales-section{padding:14px}
 .sec-title{font-size:9px;letter-spacing:2px;color:#666;font-weight:500;margin-bottom:12px}
@@ -155,10 +157,12 @@ body{background:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ari
     <div class="nav-tabs">
       <button class="nav-tab on" onclick="switchTab('collection')" id="tab-collection">Coleção</button>
       <button class="nav-tab" onclick="switchTab('sales')" id="tab-sales">Vendas</button>
+      <button class="nav-tab" onclick="switchTab('wishlist')" id="tab-wishlist">Wishlist</button>
     </div>
   </div>
   <div id="collectionView"></div>
   <div id="salesView" style="display:none"></div>
+  <div id="wishlistView" style="display:none"></div>
   <div id="addMount"></div>
   <div id="detMount"></div>
 </div>
@@ -186,6 +190,9 @@ if (!data) {
 
 let activeTab='collection', brandFilter='Todos', chartInst=null, pendingPhoto=null;
 
+let wishlist = JSON.parse(localStorage.getItem('vault_wish') || '[]');
+function saveWish(){localStorage.setItem('vault_wish',JSON.stringify(wishlist));}
+
 const emojis={Nike:'👟','Jordan Brand':'🏀',Adidas:'🔱','New Balance':'🔵',Puma:'🐆',Converse:'⭐',Vans:'🛹'};
 function ico(b){return emojis[b]||'👟'}
 function save(){localStorage.setItem('vault4',JSON.stringify(data))}
@@ -197,10 +204,13 @@ function switchTab(t){
   activeTab=t;
   document.getElementById('tab-collection').classList.toggle('on',t==='collection');
   document.getElementById('tab-sales').classList.toggle('on',t==='sales');
+  document.getElementById('tab-wishlist').classList.toggle('on',t==='wishlist');
   document.getElementById('srchWrap').style.display=t==='collection'?'block':'none';
   document.getElementById('collectionView').style.display=t==='collection'?'block':'none';
   document.getElementById('salesView').style.display=t==='sales'?'block':'none';
+  document.getElementById('wishlistView').style.display=t==='wishlist'?'block':'none';
   if(t==='sales') renderSales();
+  if(t==='wishlist') renderWishlist();
 }
 
 function render(){
@@ -386,6 +396,139 @@ function showDetail(id){
         <button class="btn-del" style="margin-top:10px" onclick="deleteItem(${d.id})">${SVG_TRASH} Excluir par</button>
       </div>
     </div>`;
+}
+
+/* ===== WISHLIST ===== */
+function renderWishlist(){
+  const wl=wishlist;
+  const cardsHtml=wl.length===0
+    ?'<div class="empty" style="grid-column:span 2">Sua wishlist está vazia.<br>Adicione tênis que deseja ter.</div>'
+    :wl.map(w=>{
+        const retN=num(w.retail),curN=num(w.current),hasCur=w.current&&w.current!=='';
+        const diff=hasCur?curN-retN:null;
+        const diffFmt=diff===null?null:(diff>=0?'+ ':'- ')+'R$ '+Math.abs(diff).toLocaleString('pt-BR');
+        const sc=diff===null?'none':diff>0?'profit':diff<0?'loss':'';
+        const leftLabel=hasCur?fmt(w.current):(fmt(w.retail)||'—');
+        const img=w.photo?`<img src="${w.photo}" alt="${w.model}">`:`<span style="font-size:48px">${ico(w.brand)}</span>`;
+        return `<div class="scard" onclick="showWishDetail(${w.id})">
+          <div class="scard-img">${img}</div>
+          <div class="scard-body">
+            <div class="scard-brand">${w.brand.toUpperCase()}</div>
+            <div class="scard-name">${w.model}</div>
+            <div class="price-row">
+              <div class="price-paid">${leftLabel}</div>
+              <div class="price-sell ${sc}">${diff!==null?diffFmt:'sem preço atual'}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('wishlistView').innerHTML=`
+    <div class="portfolio">
+      <div class="pcard"><div class="lbl">NA LISTA</div><div class="val">${wl.length}</div></div>
+      <div class="pcard"><div class="lbl">RETAIL TOTAL</div><div class="val" style="font-size:14px">R$ ${wl.reduce((s,w)=>s+num(w.retail),0).toLocaleString('pt-BR')}</div></div>
+    </div>
+    <div class="grid">${cardsHtml}</div>
+    <button class="add-btn" onclick="showWishAdd()">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#111;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Adicionar à wishlist
+    </button>`;
+}
+
+function showWishAdd(existing){
+  pendingPhoto=existing?(existing.photo||null):null;
+  const w=existing||{id:null,brand:'',model:'',size:'',retail:'',current:'',notes:'',photo:''};
+  document.getElementById('addMount').innerHTML=`
+    <div class="modal-wrap" onclick="closeAdd(event)">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="drag"></div>
+        <div class="sh-title">${w.id?'Editar wishlist':'Adicionar à wishlist'}</div>
+        <div class="fl">
+          <div class="fg">
+            <label>FOTO</label>
+            <div class="img-picker" id="imgPicker" onclick="document.getElementById('photoFileInput').click()">
+              ${pendingPhoto
+                ?`<img src="${pendingPhoto}" alt="preview"><div class="img-picker-overlay">${SVG_CAMERA}<span>TROCAR</span></div>`
+                :`<div class="img-picker-empty">${SVG_CAMERA}<span>ADICIONAR FOTO</span></div>`}
+            </div>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+          </div>
+          <div class="fg"><label>MARCA</label><input id="w-brand" value="${w.brand}" placeholder="Nike, Jordan, Adidas..."></div>
+          <div class="fg"><label>MODELO</label><input id="w-model" value="${w.model}" placeholder="Air Jordan 1 High OG..."></div>
+          <div class="fg"><label>NÚMERO</label><input id="w-size" value="${w.size}" placeholder="42"></div>
+          <div class="fr">
+            <div class="fg"><label>PREÇO RETAIL</label><input id="w-retail" value="${w.retail}" placeholder="R$ 0"></div>
+            <div class="fg"><label>PREÇO ATUAL</label><input id="w-current" value="${w.current}" placeholder="Opcional"></div>
+          </div>
+          <div class="fg"><label>OBSERVAÇÕES</label><textarea id="w-notes" placeholder="Colorway, onde encontrar...">${w.notes||''}</textarea></div>
+          <button class="btn-save" onclick="saveWishItem(${w.id||'null'})">Salvar</button>
+          <button class="btn-cancel" onclick="closeAdd()">Cancelar</button>
+          ${w.id?`<button class="btn-del" onclick="deleteWishItem(${w.id})">${SVG_TRASH} Remover da wishlist</button>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function saveWishItem(id){
+  const brand=document.getElementById('w-brand').value.trim()||'Outros';
+  const model=document.getElementById('w-model').value.trim()||'Sem nome';
+  const size=document.getElementById('w-size').value.trim();
+  const retail=document.getElementById('w-retail').value.replace(/\D/g,'');
+  const current=document.getElementById('w-current').value.replace(/\D/g,'');
+  const notes=document.getElementById('w-notes').value.trim();
+  const photo=pendingPhoto!==null?pendingPhoto:(id?(wishlist.find(w=>w.id===id)||{}).photo||'':'');
+  const obj={brand,model,size,retail,current,notes,photo};
+  if(id){Object.assign(wishlist.find(w=>w.id===id),obj);}
+  else{wishlist.push({id:Date.now(),...obj});}
+  saveWish();pendingPhoto=null;
+  document.getElementById('addMount').innerHTML='';
+  document.getElementById('detMount').innerHTML='';
+  renderWishlist();
+}
+
+function deleteWishItem(id){
+  wishlist=wishlist.filter(w=>w.id!=id);
+  saveWish();pendingPhoto=null;
+  document.getElementById('addMount').innerHTML='';
+  document.getElementById('detMount').innerHTML='';
+  renderWishlist();
+}
+
+function showWishDetail(id){
+  const w=wishlist.find(x=>x.id===id);if(!w)return;
+  const retN=num(w.retail),curN=num(w.current),hasCur=w.current&&w.current!=='';
+  const diff=hasCur?curN-retN:null;
+  const pct=hasCur&&retN?((diff/retN)*100):null;
+  const cls=diff===null?'zero':diff>0?'pos':'neg';
+  const sign=diff!==null&&diff>0?'+ ':'';
+  let svc='muted';if(hasCur){svc=curN>retN?'green':curN<retN?'red':'';}
+  const hero=w.photo?`<img src="${w.photo}" alt="${w.model}">`:`<span style="font-size:80px">${ico(w.brand)}</span>`;
+  document.getElementById('detMount').innerHTML=`
+    <div class="det-wrap">
+      <div class="det-hero">${hero}
+        <div class="det-back" onclick="document.getElementById('detMount').innerHTML=''">${SVG_BACK}</div>
+        <div class="det-edit" onclick="editFromWishDet(${w.id})">${SVG_EDIT}</div>
+      </div>
+      <div class="det-body">
+        <div style="font-size:9px;letter-spacing:2px;font-weight:500;padding:3px 8px;border-radius:100px;background:rgba(255,255,255,0.08);color:#aaa;display:inline-block;margin-bottom:6px">WISHLIST</div>
+        <div class="det-brand">${w.brand.toUpperCase()}</div>
+        <div class="det-name">${w.model}</div>
+        <div class="det-grid">
+          <div class="det-block"><div class="lbl">NÚMERO</div><div class="v">${w.size||'—'}</div></div>
+          <div class="det-block"><div class="lbl">RETAIL</div><div class="v">${fmt(w.retail)||'—'}</div></div>
+          <div class="det-block" style="grid-column:span 2"><div class="lbl">PREÇO ATUAL</div><div class="v ${svc}">${hasCur?fmt(w.current):'Não informado'}</div></div>
+        </div>
+        ${diff!==null?`<div class="profit-card"><div class="lbl">VARIAÇÃO EM RELAÇÃO AO RETAIL</div><div class="profit-row"><div class="profit-num ${cls}">${sign}R$ ${Math.abs(diff).toLocaleString('pt-BR')}</div><div class="profit-pct">${pct!==null?(pct>=0?'+':'')+pct.toFixed(1)+'%':''}</div></div></div>`:''}
+        ${w.notes?`<div class="det-notes"><div class="lbl">OBSERVAÇÕES</div><div class="txt">${w.notes}</div></div>`:''}
+        <button class="btn-save" onclick="editFromWishDet(${w.id})">${SVG_EDIT} Editar</button>
+        <button class="btn-del" style="margin-top:10px" onclick="deleteWishItem(${w.id})">${SVG_TRASH} Remover da wishlist</button>
+      </div>
+    </div>`;
+}
+
+function editFromWishDet(id){
+  document.getElementById('detMount').innerHTML='';
+  showWishAdd(wishlist.find(x=>x.id===id));
 }
 
 function editFromDet(id){document.getElementById('detMount').innerHTML='';showAdd(data.find(x=>x.id===id));}
