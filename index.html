@@ -210,7 +210,7 @@ function switchTab(t){
   document.getElementById('salesView').style.display=t==='sales'?'block':'none';
   document.getElementById('wishlistView').style.display=t==='wishlist'?'block':'none';
   if(t==='sales') renderSales();
-  if(t==='wishlist') renderWishlist();
+  if(t==='wishlist'){renderWishlist();maybeAskNotif();}
 }
 
 function render(){
@@ -410,8 +410,10 @@ function renderWishlist(){
         const sc=diff===null?'none':diff>0?'profit':diff<0?'loss':'';
         const leftLabel=hasCur?fmt(w.current):(fmt(w.retail)||'—');
         const img=w.photo?`<img src="${w.photo}" alt="${w.model}">`:`<span style="font-size:48px">${ico(w.brand)}</span>`;
+        const hasDrop=!!w.dropDate;
+        const dropSoon=hasDrop&&(new Date(`${w.dropDate}T${w.dropTime||'10:00'}:00`)-new Date()<86400000)&&(new Date(`${w.dropDate}T${w.dropTime||'10:00'}:00`)>new Date());
         return `<div class="scard" onclick="showWishDetail(${w.id})">
-          <div class="scard-img">${img}</div>
+          <div class="scard-img" style="position:relative">${img}${dropSoon?'<div style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:600;letter-spacing:1px;background:#f87171;color:#111;padding:3px 7px;border-radius:4px">⚡ DROP</div>':hasDrop?'<div style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:500;letter-spacing:1px;background:rgba(0,0,0,0.6);color:#aaa;padding:3px 7px;border-radius:4px">DROP</div>':''}</div>
           <div class="scard-body">
             <div class="scard-brand">${w.brand.toUpperCase()}</div>
             <div class="scard-name">${w.model}</div>
@@ -434,7 +436,7 @@ function renderWishlist(){
 
 function showWishAdd(existing){
   pendingPhoto=existing?(existing.photo||null):null;
-  const w=existing||{id:null,brand:'',model:'',size:'',retail:'',current:'',notes:'',photo:''};
+  const w=existing||{id:null,brand:'',model:'',size:'',retail:'',current:'',notes:'',photo:'',dropDate:'',dropTime:''};
   document.getElementById('addMount').innerHTML=`
     <div class="modal-wrap" onclick="closeAdd(event)">
       <div class="sheet" onclick="event.stopPropagation()">
@@ -457,6 +459,12 @@ function showWishAdd(existing){
             <div class="fg"><label>PREÇO RETAIL</label><input id="w-retail" value="${w.retail}" placeholder="R$ 0"></div>
             <div class="fg"><label>PREÇO ATUAL</label><input id="w-current" value="${w.current}" placeholder="Opcional"></div>
           </div>
+          <div class="divider"></div>
+          <div style="font-size:9px;letter-spacing:2px;color:#888;font-weight:500;margin-bottom:2px">DATA DO DROP <span style="color:#444;font-size:9px;letter-spacing:0">(opcional)</span></div>
+          <div class="fr">
+            <div class="fg"><label>DATA</label><input type="date" id="w-dropDate" value="${w.dropDate||''}"></div>
+            <div class="fg"><label>HORÁRIO</label><input type="time" id="w-dropTime" value="${w.dropTime||''}"></div>
+          </div>
           <div class="fg"><label>OBSERVAÇÕES</label><textarea id="w-notes" placeholder="Colorway, onde encontrar...">${w.notes||''}</textarea></div>
           <button class="btn-save" onclick="saveWishItem(${w.id||'null'})">Salvar</button>
           <button class="btn-cancel" onclick="closeAdd()">Cancelar</button>
@@ -473,13 +481,16 @@ function saveWishItem(id){
   const retail=document.getElementById('w-retail').value.replace(/\D/g,'');
   const current=document.getElementById('w-current').value.replace(/\D/g,'');
   const notes=document.getElementById('w-notes').value.trim();
+  const dropDate=document.getElementById('w-dropDate').value||'';
+  const dropTime=document.getElementById('w-dropTime').value||'';
   const photo=pendingPhoto!==null?pendingPhoto:(id?(wishlist.find(w=>w.id===id)||{}).photo||'':'');
-  const obj={brand,model,size,retail,current,notes,photo};
+  const obj={brand,model,size,retail,current,notes,photo,dropDate,dropTime};
   if(id){Object.assign(wishlist.find(w=>w.id===id),obj);}
   else{wishlist.push({id:Date.now(),...obj});}
   saveWish();pendingPhoto=null;
   document.getElementById('addMount').innerHTML='';
   document.getElementById('detMount').innerHTML='';
+  scheduleDropNotifications();
   renderWishlist();
 }
 
@@ -488,7 +499,16 @@ function deleteWishItem(id){
   saveWish();pendingPhoto=null;
   document.getElementById('addMount').innerHTML='';
   document.getElementById('detMount').innerHTML='';
+  scheduleDropNotifications();
   renderWishlist();
+}
+
+function fmtDropDateTime(date,time){
+  if(!date)return null;
+  try{
+    const dt=new Date(`${date}T${time||'10:00'}:00`);
+    return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})+(time?' às '+time:'');
+  }catch(e){return date;}
 }
 
 function showWishDetail(id){
@@ -500,6 +520,23 @@ function showWishDetail(id){
   const sign=diff!==null&&diff>0?'+ ':'';
   let svc='muted';if(hasCur){svc=curN>retN?'green':curN<retN?'red':'';}
   const hero=w.photo?`<img src="${w.photo}" alt="${w.model}">`:`<span style="font-size:80px">${ico(w.brand)}</span>`;
+  const dropLabel=fmtDropDateTime(w.dropDate,w.dropTime);
+  const hasDrop=!!w.dropDate;
+
+  // Check if drop is upcoming
+  let dropStatus='';
+  if(hasDrop){
+    const dropDt=new Date(`${w.dropDate}T${w.dropTime||'10:00'}:00`);
+    const now=new Date();
+    const diff2=dropDt-now;
+    if(diff2<0) dropStatus='<span style="font-size:10px;color:#555;">JÁ CAIU</span>';
+    else if(diff2<86400000) dropStatus='<span style="font-size:10px;color:#f87171;letter-spacing:1px;font-weight:600;">⚡ MENOS DE 24H</span>';
+    else{
+      const days=Math.floor(diff2/86400000);
+      dropStatus=`<span style="font-size:10px;color:#aaa;">em ${days} dia${days>1?'s':''}</span>`;
+    }
+  }
+
   document.getElementById('detMount').innerHTML=`
     <div class="det-wrap">
       <div class="det-hero">${hero}
@@ -516,11 +553,117 @@ function showWishDetail(id){
           <div class="det-block" style="grid-column:span 2"><div class="lbl">PREÇO ATUAL</div><div class="v ${svc}">${hasCur?fmt(w.current):'Não informado'}</div></div>
         </div>
         ${diff!==null?`<div class="profit-card"><div class="lbl">VARIAÇÃO EM RELAÇÃO AO RETAIL</div><div class="profit-row"><div class="profit-num ${cls}">${sign}R$ ${Math.abs(diff).toLocaleString('pt-BR')}</div><div class="profit-pct">${pct!==null?(pct>=0?'+':'')+pct.toFixed(1)+'%':''}</div></div></div>`:''}
+        ${hasDrop?`<div class="det-block" style="margin-bottom:14px;padding:14px;background:#1a1a1a;border-radius:12px;border:0.5px solid rgba(255,255,255,0.06)">
+          <div class="lbl" style="font-size:9px;letter-spacing:2px;color:#555;font-weight:500;margin-bottom:6px">DATA DO DROP</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:15px;font-weight:500;color:#fff">${dropLabel}</div>
+            ${dropStatus}
+          </div>
+        </div>`:''}
         ${w.notes?`<div class="det-notes"><div class="lbl">OBSERVAÇÕES</div><div class="txt">${w.notes}</div></div>`:''}
+        ${!notifGranted?`<button class="btn-cancel" style="margin-bottom:10px" onclick="requestNotifPermission()">🔔 Ativar notificações de drop</button>`:''}
         <button class="btn-save" onclick="editFromWishDet(${w.id})">${SVG_EDIT} Editar</button>
         <button class="btn-del" style="margin-top:10px" onclick="deleteWishItem(${w.id})">${SVG_TRASH} Remover da wishlist</button>
       </div>
     </div>`;
+}
+
+/* ===== FIREBASE FCM ===== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCZ-3uEkchuCj70QPl9282zNddWB0bsNmk",
+  authDomain: "vault-sneakers.firebaseapp.com",
+  projectId: "vault-sneakers",
+  storageBucket: "vault-sneakers.firebasestorage.app",
+  messagingSenderId: "1087512082503",
+  appId: "1:1087512082503:web:2196dc915767ed1cf15962"
+};
+const VAPID_KEY = "gbnXkoXUuA_fD4KjjlPomDZQD2BZB9aux-pKCuk5w04";
+
+let fcmToken = localStorage.getItem('fcm_token') || null;
+let notifGranted = Notification.permission === 'granted';
+
+async function initFirebase(){
+  try {
+    const {initializeApp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const {getMessaging, getToken, onMessage} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const messaging = getMessaging(app);
+
+    // Handle foreground messages
+    onMessage(messaging, payload => {
+      const {title, body} = payload.notification || {};
+      if(title && Notification.permission === 'granted'){
+        new Notification(title, {body, icon:'icon-192.png'});
+      }
+    });
+
+    return {messaging, getToken};
+  } catch(e) {
+    console.warn('Firebase init failed:', e);
+    return null;
+  }
+}
+
+async function requestNotifPermission(){
+  const permission = await Notification.requestPermission();
+  notifGranted = permission === 'granted';
+  if(!notifGranted) return;
+
+  const fb = await initFirebase();
+  if(!fb) return;
+
+  try {
+    const sw = await navigator.serviceWorker.ready;
+    const token = await fb.getToken(fb.messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: sw
+    });
+    if(token){
+      fcmToken = token;
+      localStorage.setItem('fcm_token', token);
+      scheduleDropNotifications();
+      new Notification('Vault 🔔', {body:'Notificações de drop ativadas!', icon:'icon-192.png'});
+    }
+  } catch(e) {
+    console.warn('FCM token error:', e);
+  }
+}
+
+// Store scheduled drops in SW via postMessage so it can show them even when app is closed
+function scheduleDropNotifications(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.ready.then(sw => {
+    const drops = wishlist
+      .filter(w => w.dropDate)
+      .map(w => ({
+        id: w.id,
+        model: w.model,
+        brand: w.brand,
+        retail: fmt(w.retail) || '—',
+        dropTime: w.dropTime || '10:00',
+        dropTs: new Date(`${w.dropDate}T${w.dropTime||'10:00'}:00`).getTime()
+      }))
+      .filter(d => d.dropTs > Date.now());
+
+    sw.active && sw.active.postMessage({type:'SCHEDULE_DROPS', drops});
+  });
+}
+
+function maybeAskNotif(){
+  if(Notification.permission === 'default'){
+    setTimeout(()=>{
+      if(document.getElementById('wishlistView').style.display !== 'none'){
+        requestNotifPermission();
+      }
+    }, 2000);
+  }
+}
+
+// Init on load
+if(notifGranted){
+  initFirebase();
+  scheduleDropNotifications();
 }
 
 function editFromWishDet(id){
